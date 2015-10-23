@@ -7,9 +7,12 @@ var Formsy = require('formsy-react');
 var ComponentMixin = require('./mixins/component');
 var Row = require('./row');
 
+var BACK_KEY = 8;
 var ESCAPE_KEY = 27;
 var ENTER_KEY = 13;
+var LEFT_KEY = 37;
 var UP_KEY = 38;
+var RIGHT_KEY = 39;
 var DOWN_KEY = 40;
 
 /**
@@ -28,9 +31,23 @@ var SelectedItemComponent = React.createClass({
         this.props.onRemove(this.props.label);
     },
     render: function() {
-        var itemElem = (this.props.listItemType == 'url')
-            ? (<a href={this.props.label} className="item-link" target="_blank">{this.props.label}</a>)
-            : (<span>{this.props.label}</span>);
+        var itemElem;
+        if (this.props.listItemType == 'url') {
+            var url = this.props.label;
+            // Check if the url starts with a valid protocol (i.e http or https)
+            var protocolMatch = url.match(/http/);
+            if (!protocolMatch || protocolMatch.length === 0) {
+                url = 'http://' + url;
+            }
+            itemElem = (
+                <a href={url} className="item-link" target="_blank">{url}</a>
+            );
+        }
+        else {
+            itemElem = (
+                <span>{this.props.label}</span>
+            );
+        }
 
         return (
             <li>
@@ -72,8 +89,12 @@ var SelectedListComponent = React.createClass({
         }
         // Define the list style
         var listStyleClass = (['common', 'tag'].indexOf(this.props.listStyle) == -1)
-            ? 'selected-list common-style clearfix'
-            : this.props.listStyle + '-style selected-list clearfix';
+            ? 'selected-list common-style'
+            : this.props.listStyle + '-style selected-list';
+
+        if (this.props.listStyle === 'common') {
+            listStyleClass += ' clearfix';
+        }
 
         // Display the list only if there are selected items
         if (items.length == 0) {
@@ -194,6 +215,7 @@ var ItemListComponent = React.createClass({
         };
     },
     getInitialState: function() {
+        this.tagDisplay = this.props.listStyle === 'tag';
         return {
             // The selected items
             items: null,
@@ -252,13 +274,24 @@ var ItemListComponent = React.createClass({
         }
         // Valid item, push it at the top of the list
         else if (!newState.errorMsg) {
-            // Copy the existing items in a var and push the new item at the top
-            this.items.unshift(newItem);
+            // Copy the existing items in a var and push the new item at the end of the list in case of
+            // a tag list
+            if (this.tagDisplay) {
+                this.items.push(newItem);
+            }
+            // ... or at the start in case of a common list
+            else {
+                this.items.unshift(newItem);
+            }
         }
 
         // Indicate that the selected list has been altered
         newState.selectedListIsPristine = false;
 
+        // If it's a tag list, reset the txtBox width
+        if (this.tagDisplay) {
+            React.findDOMNode(this.refs.txtInput).style.width = '8px';
+        }
         // Set the new state
         this.setState(newState, function() {
             this.setValue(this.items)
@@ -336,13 +369,9 @@ var ItemListComponent = React.createClass({
     },
     handleBlur: function(evt) {
         if (this.autoSuggestEnabled && !this.isDefined(this.state.focusedSuggestedItemIndex)) {
-            console.log('on blur without suggestion....');
             this.setState({
                 hideSuggestionList: true
             });
-        }
-        else {
-            console.log('on blur with suggestion:', this.state.focusedSuggestedItemIndex, this.state.focusedSuggestedItemLabel);
         }
     },
     handleFocus: function(evt) {
@@ -359,9 +388,38 @@ var ItemListComponent = React.createClass({
      * @param evt
      */
     handleKeyDown: function(evt) {
-        if (evt.which == ENTER_KEY) {
+        var value = evt.target.value.trim();
+        // In case of tag displays, change the width of the input textbox according to
+        // input text
+        if (this.tagDisplay) {
+            var txtBox = React.findDOMNode(this.refs.txtInput),
+                measureTxt = React.findDOMNode(this.refs.measureTxt),
+                targetW;
+            // Set the value of the input in the measurement text and get its width
+            measureTxt.innerHTML = value;
+            targetW = measureTxt.offsetWidth + 13;
+            // Set the width of the textbox
+            txtBox.style.width = targetW + 'px';
+        }
+
+        if (evt.which === ENTER_KEY) {
             evt.preventDefault();
         }
+        // The user hit the back button
+        else if (evt.which === BACK_KEY) {
+            // Remove the last item added in the list if the following conditions are satisfied:
+            // - the tag display is enabled,
+            // - there are items in the list,
+            // - the input textbox is empty,
+            // remove the last item added
+            if (this.tagDisplay
+                && this.items
+                && this.items.length > 0
+                && value.length === 0
+            )
+            this.handleRemoveItem(this.items[this.items.length - 1]);
+        }
+
     },
     /**
      * Monitor key up events. If an enter is clicked add a new item
@@ -373,11 +431,11 @@ var ItemListComponent = React.createClass({
      */
     handleKeyUp: function(evt) {
         evt.preventDefault();
+        var value = evt.target.value.trim();
 
         // Reset error messages, if any
         this.resetError();
 
-        var value = evt.target.value.trim();
         // Add the new item to the list
         if (evt.which === ENTER_KEY) {
             this.addItem(evt.target);
@@ -441,6 +499,9 @@ var ItemListComponent = React.createClass({
             focusedSuggestedItemIndex: newIndex
         }, this.addItem);
     },
+    handleTextBoxClick: function(evt) {
+        React.findDOMNode(this.refs.txtInput).focus();
+    },
     /**
      * Check if the element is disabled
      * @returns {*}
@@ -449,7 +510,6 @@ var ItemListComponent = React.createClass({
         return this.isFormDisabled() || this.props.disabled;
     },
     renderElement: function() {
-
         var itemError = this.state.errorMsg,
             focusedSuggestedItemLabel = this.state.focusedSuggestedItemLabel,
             focusedSuggestedItemIndex = this.state.focusedSuggestedItemIndex,
@@ -485,6 +545,16 @@ var ItemListComponent = React.createClass({
             errorClassName += ' hide';
         }
 
+        var itemListCompClassName = 'itemlist-component';
+        if (this.tagDisplay) {
+            itemListCompClassName += ' tag-list';
+        }
+
+        var textBoxClassName = '';
+        if (!this.tagDisplay) {
+            textBoxClassName += 'form-control';
+        }
+
         // If auto-suggest mode is enabled, display an ellipsis icon instead of the plus icon
         var inputAddon;
         if (this.autoSuggestEnabled) {
@@ -494,15 +564,39 @@ var ItemListComponent = React.createClass({
             inputAddon = (<a href="#" className="fa fa-plus add-item-btn" onClick={this.handleAddItem}></a>);
         }
 
+        // Keep the selected list component in a variable
+        var selectedListComponent = (
+            <SelectedListComponent
+                items={this.items}
+                listItemType={this.props.listItemType}
+                listStyle={this.props.listStyle}
+                onRemoveItem={this.handleRemoveItem} />
+        );
+        var tagList
+            , commonList;
+        // In case of tag lists, the selected list is placed inside the input-group element
+        // and precedes the text box. A helper invisible span is also used to properly measure
+        // the width of the input text and resize the input text accordingly
+        if (this.tagDisplay) {
+            tagList = (
+                <div>
+                    {selectedListComponent}
+                    <span className="measure-text" ref="measureTxt"></span>
+                </div>
+            );
+        }
+        else {
+            commonList = selectedListComponent;
+        }
         return (
-            <div className="itemlist-component">
+            <div className={itemListCompClassName}>
                 <div className="clearfix input-container">
-                    <div className="input-group">
-                        <input type="text" className="form-control" ref="txtInput" autoComplete="off"
+                    <div className="input-group" ref="inputGroup" onClick={this.handleTextBoxClick}>
+                        {tagList}
+                        <input type="text" className={textBoxClassName} ref="txtInput" autoComplete="off"
                                disabled={this.isElementDisabled()}
                                onKeyDown={this.handleKeyDown}
                                onKeyUp={this.handleKeyUp} />
-
                         <span className="input-group-addon">
                             {inputAddon}
                         </span>
@@ -514,12 +608,7 @@ var ItemListComponent = React.createClass({
 
                     <div className={errorClassName}>{itemError}</div>
                 </div>
-                <SelectedListComponent
-                    items={this.items}
-                    listItemType={this.props.listItemType}
-                    listStyle={this.props.listStyle}
-                    onRemoveItem={this.handleRemoveItem} />
-
+                {commonList}
             </div>
         )
     },
