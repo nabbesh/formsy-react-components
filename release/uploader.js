@@ -324,6 +324,14 @@ var Uploader = React.createClass({
             pickerOpts.multiple = true;
             pickerOpts.maxFiles = this.props.maxItems;
         }
+        // Take into account the image quality
+        if (this.props.imageQuality && this.props.imageQuality > 0 && this.props.imageQuality <= 100) {
+            pickerOpts.imageQuality = this.props.imageQuality;
+        }
+        // Enable basic image conversions
+        if (this.props.enableCrop) {
+            pickerOpts.conversions = ['crop', 'rotate'];
+        }
         // Store options, applicable only in the case of pickAndStore() function
         var storeOpts = {
             location: 'S3',
