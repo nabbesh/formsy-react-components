@@ -9,6 +9,8 @@ var Row = require('./row');
 
 // Remove item error codes
 var ERR_REMOVE_404 = 171;
+// The user closed the dialog without picking a file
+var ERR_NO_FILE_PICKED = 101;
 
 // Working environments
 var ENV_PRODUCTION = 'production';
@@ -305,9 +307,13 @@ var Uploader = React.createClass({
      * (i.e sandbox, 'production')
      */
     uploadFile: function() {
+        var maxSize = this.props.maxFizeSize
+            ? this.props.maxFizeSize
+            : UPLOAD_MAX_SIZE;
+
         // Store options, common for the pickMultiple() and pickAndStore() functions
         var pickerOpts = {
-            maxSize: UPLOAD_MAX_SIZE * 1024 * 1024,
+            maxSize: maxSize * 1024 * 1024,
             mimetypes: this.props.mimetypes
         };
         // Check if only specific services have been activated
@@ -354,7 +360,10 @@ var Uploader = React.createClass({
                     uploadCb(blobs);
                 }.bind(this),
                 function(error) {
-                    console.error("[UploadComponent Error] ", error);
+                    // An error occurred
+                    if (error.code !== ERR_NO_FILE_PICKED) {
+                        console.error("[UploadComponent Error] ", error);
+                    }
                 }.bind(this)
             );
         }
@@ -365,7 +374,10 @@ var Uploader = React.createClass({
                     uploadCb(blobs);
                 }.bind(this),
                 function(error) {
-                    console.error("[UploadComponent Error] ", error);
+                    // An error occurred
+                    if (error.code !== ERR_NO_FILE_PICKED) {
+                        console.error("[UploadComponent Error] ", error);
+                    }
                 }.bind(this)
             );
         }
