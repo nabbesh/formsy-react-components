@@ -3,6 +3,7 @@
 'use strict';
 
 var React = require('react');
+var ReactDOM = require('react-dom');
 var Formsy = require('formsy-react');
 var ComponentMixin = require('./mixins/component');
 var Row = require('./row');
@@ -237,7 +238,7 @@ var ItemListComponent = React.createClass({
      */
     addItem: function(inputField) {
         if (!inputField) {
-            inputField = React.findDOMNode(this.refs.txtInput);
+            inputField = ReactDOM.findDOMNode(this.refs.txtInput);
         }
 
         var newItem = inputField.value.trim(),
@@ -290,7 +291,7 @@ var ItemListComponent = React.createClass({
 
         // If it's a tag list, reset the txtBox width
         if (this.tagDisplay) {
-            React.findDOMNode(this.refs.txtInput).style.width = '8px';
+            ReactDOM.findDOMNode(this.refs.txtInput).style.width = '8px';
         }
         // Set the new state
         this.setState(newState, function() {
@@ -392,8 +393,8 @@ var ItemListComponent = React.createClass({
         // In case of tag displays, change the width of the input textbox according to
         // input text
         if (this.tagDisplay) {
-            var txtBox = React.findDOMNode(this.refs.txtInput),
-                measureTxt = React.findDOMNode(this.refs.measureTxt),
+            var txtBox = ReactDOM.findDOMNode(this.refs.txtInput),
+                measureTxt = ReactDOM.findDOMNode(this.refs.measureTxt),
                 targetW;
             // Set the value of the input in the measurement text and get its width
             measureTxt.innerHTML = value;
@@ -500,7 +501,7 @@ var ItemListComponent = React.createClass({
         }, this.addItem);
     },
     handleTextBoxClick: function(evt) {
-        React.findDOMNode(this.refs.txtInput).focus();
+        ReactDOM.findDOMNode(this.refs.txtInput).focus();
     },
     /**
      * Check if the element is disabled
