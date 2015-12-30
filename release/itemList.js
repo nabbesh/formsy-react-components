@@ -2,6 +2,8 @@
 
 'use strict';
 
+function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
+
 var React = require('react');
 var Formsy = require('formsy-react');
 var ComponentMixin = require('./mixins/component');
@@ -82,7 +84,7 @@ var SelectedListComponent = React.createClass({
     render: function render() {
         // Traverse list of selected items and generate the DOM elements
         var items = [];
-        if (this.props.items && typeof this.props.items == 'object' && this.props.items.length > 0) {
+        if (this.props.items && _typeof(this.props.items) == 'object' && this.props.items.length > 0) {
             items = this.props.items.map(function (item) {
                 var itemKey = 'item' + item;
                 return React.createElement(SelectedItemComponent, {
@@ -164,7 +166,7 @@ var SuggestedListComponent = React.createClass({
     },
     render: function render() {
         var suggestedItems = [];
-        if (typeof this.props.items == 'object') {
+        if (_typeof(this.props.items) == 'object') {
             suggestedItems = this.props.items.map(function (item) {
                 var itemKey = 'suggestedItem' + item;
                 return React.createElement(SuggestedItemComponent, {
@@ -532,7 +534,7 @@ var ItemListComponent = React.createClass({
             curNumberOfSuggestions = 0;
         this.filteredSuggestedItems = [];
         // note: you need the first condition because null is actually an object
-        if (this.props.suggestedItems && typeof this.props.suggestedItems == 'object' && !this.state.hideSuggestionList) {
+        if (this.props.suggestedItems && _typeof(this.props.suggestedItems) == 'object' && !this.state.hideSuggestionList) {
             this.props.suggestedItems.map(function (item) {
                 var patt = new RegExp(keyword, "i");
                 if (keyword !== '' && patt.test(item) && curNumberOfSuggestions < maxNumberOfSuggestions) {

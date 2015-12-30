@@ -2,6 +2,8 @@
 
 'use strict';
 
+function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
+
 var React = require('react');
 var Formsy = require('formsy-react');
 var ComponentMixin = require('./mixins/component');
@@ -255,7 +257,7 @@ var PreviewListComponent = React.createClass({
     render: function render() {
         // Traverse list of uploaded items and generate the DOM elements
         var items = [];
-        if (this.props.items && typeof this.props.items == 'object' && this.props.items.length > 0) {
+        if (this.props.items && _typeof(this.props.items) == 'object' && this.props.items.length > 0) {
             items = this.props.items.map(function (item) {
                 // Generate a unique key
                 var urlParts = item.url.split('/'),
