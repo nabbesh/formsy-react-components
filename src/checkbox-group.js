@@ -26,7 +26,7 @@ var CheckboxGroup = React.createClass({
     changeCheckbox: function() {
         var value = [];
         this.props.options.forEach(function(option, key) {
-            if (this.refs[key].getDOMNode().checked) {
+            if (this.refs[key].checked) {
                 value.push(option.value);
             }
 
@@ -68,10 +68,7 @@ var CheckboxGroup = React.createClass({
 
         return (
             <Row
-                label={this.props.label}
-                required={this.isRequired()}
-                hasErrors={this.showErrors()}
-                layout={this.getLayout()}
+                {...this.getRowProperties()}
                 fakeLabel={true}
             >
                 {this.renderElement()}

@@ -52,10 +52,8 @@ var Checkbox = React.createClass({
 
         return (
             <Row
+                {...this.getRowProperties()}
                 label={this.props.rowLabel}
-                required={this.isRequired()}
-                hasErrors={this.showErrors()}
-                layout={this.getLayout()}
                 htmlFor={this.getId()}
             >
                 {element}

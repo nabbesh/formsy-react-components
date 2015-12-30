@@ -58,13 +58,10 @@ var Checkbox = React.createClass({
 
         return React.createElement(
             Row,
-            {
+            _extends({}, this.getRowProperties(), {
                 label: this.props.rowLabel,
-                required: this.isRequired(),
-                hasErrors: this.showErrors(),
-                layout: this.getLayout(),
                 htmlFor: this.getId()
-            },
+            }),
             element,
             this.renderHelp(),
             this.renderErrorMessage()

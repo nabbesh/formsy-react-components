@@ -2,6 +2,8 @@
 
 'use strict';
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var React = require('react');
 var Formsy = require('formsy-react');
 var ComponentMixin = require('./mixins/component');
@@ -27,7 +29,7 @@ var CheckboxGroup = React.createClass({
     changeCheckbox: function changeCheckbox() {
         var value = [];
         this.props.options.forEach((function (option, key) {
-            if (this.refs[key].getDOMNode().checked) {
+            if (this.refs[key].checked) {
                 value.push(option.value);
             }
         }).bind(this));
@@ -74,13 +76,9 @@ var CheckboxGroup = React.createClass({
 
         return React.createElement(
             Row,
-            {
-                label: this.props.label,
-                required: this.isRequired(),
-                hasErrors: this.showErrors(),
-                layout: this.getLayout(),
+            _extends({}, this.getRowProperties(), {
                 fakeLabel: true
-            },
+            }),
             this.renderElement(),
             this.renderHelp(),
             this.renderErrorMessage()

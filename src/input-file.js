@@ -42,10 +42,7 @@ var File = React.createClass({
 
         return (
             <Row
-                label={this.props.label}
-                required={this.isRequired()}
-                hasErrors={this.showErrors()}
-                layout={this.getLayout()}
+                {...this.getRowProperties()}
                 htmlFor={this.getId()}
             >
                 {element}

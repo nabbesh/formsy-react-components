@@ -16,7 +16,15 @@ gulp.task('watch', ['release'], function() {
 
 gulp.task('release', function() {
     return gulp.src(files.src)
-        .pipe(babel())
+        .pipe(babel({
+            'presets': [
+                'react',
+                'es2015'
+            ],
+            'plugins': [
+                'transform-react-display-name'
+            ]
+        }))
         .pipe(gulp.dest('./release'));
 });
 
